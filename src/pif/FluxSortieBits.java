@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
+ * @Author Dimitri SOLAR, Valentin LOISON
+ * @Version 1.0
  * Écrit des bits dans un flux de sortie sous-jacent (OutputStream).
  * Tamponne les bits jusqu'à ce qu'un octet complet puisse être écrit.
  */

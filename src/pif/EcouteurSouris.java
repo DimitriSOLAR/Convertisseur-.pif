@@ -31,11 +31,6 @@ public class EcouteurSouris extends MouseAdapter {
 
         panneau.gererDeplacement(dx, dy);
 
-        // Check if movement actually happened or was needed?
-        // Logic in original was: calculate, update decalage checked bounds, repaint.
-        // gererDeplacement will handle updating decalage and checking bounds.
-        // It will return true if repaint needed? Or just repaint itself.
-        // In Swing repaint() is lightweight, so calling it is fine.
 
         dernierPointSouris = e.getPoint();
     }

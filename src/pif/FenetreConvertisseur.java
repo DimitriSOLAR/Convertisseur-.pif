@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
+ * @Author Dimitri SOLAR, Valentin LOISON
+ * @version 1.0
  * Fenêtre principale de l'application Convertisseur.
  */
 public final class FenetreConvertisseur extends JFrame {
@@ -26,19 +28,15 @@ public final class FenetreConvertisseur extends JFrame {
         setLocationRelativeTo(null);
         this.cheminSortieDefaut = cheminSortie;
 
-        // Mise en page
         setLayout(new BorderLayout());
 
-        // Haut : Image
         etiquetteImage = new JLabel("Aucune image chargée", SwingConstants.CENTER);
         etiquetteImage.setPreferredSize(new Dimension(300, 300));
         add(new JScrollPane(etiquetteImage), BorderLayout.NORTH);
 
-        // Centre : Statistiques
         ongletsStats = new JTabbedPane();
         add(ongletsStats, BorderLayout.CENTER);
 
-        // Bas : Contrôles
         JPanel controles = new JPanel();
         JButton boutonOuvrir = new JButton("Ouvrir une image");
         JButton boutonConvertir = new JButton("Convertir en PIF");
@@ -73,7 +71,6 @@ public final class FenetreConvertisseur extends JFrame {
             }
             this.imageCourante = img;
 
-            // Afficher l'image redimensionnée
             ImageIcon icone = new ImageIcon(getImageRedimensionnee(img, 300, 300));
             etiquetteImage.setIcon(icone);
             etiquetteImage.setText("");
@@ -124,7 +121,6 @@ public final class FenetreConvertisseur extends JFrame {
 
         String[] colonnes = { "Valeur", "Fréquence", "Code Initial", "Code Canonique" };
 
-        // On ne garde que les lignes où la fréquence > 0 pour un tableau plus propre
         int nbLignes = 0;
         for (int f : frequences)
             if (f > 0)
@@ -143,7 +139,6 @@ public final class FenetreConvertisseur extends JFrame {
             }
         }
 
-        // Utilisation directe du tableau sans DefaultTableModel
         JTable table = new JTable(donneesLignes, colonnes);
         ongletsStats.addTab(nom, new JScrollPane(table));
     }

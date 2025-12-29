@@ -9,6 +9,9 @@ import java.util.Arrays;
 public class Main {
 
     /**
+     * @Author Dimitri SOLAR, Valentin LOISON
+     * @version 1.0
+     *
      * Point d'entrée de l'application.
      * 
      * @param args Les arguments de la ligne de commande.

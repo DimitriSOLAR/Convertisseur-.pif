@@ -5,6 +5,8 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 
 /**
+ * @Author Dimitri SOLAR, Valentin LOISON
+ * @version 1.0
  * Panneau pour l'affichage de l'image.
  */
 public final class PanneauImage extends JPanel {

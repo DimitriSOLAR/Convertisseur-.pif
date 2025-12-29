@@ -4,12 +4,14 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
+ * @Author Dimitri SOLAR, Valentin LOISON
+ * @Version 1.0
  * Lit des bits depuis un flux d'entrée sous-jacent (InputStream).
  */
 public class FluxEntreeBits implements AutoCloseable {
     private final InputStream entree;
     private int tampon;
-    private int bitsRestants; // Nombre de bits restants dans le tampon
+    private int bitsRestants; 
 
     /**
      * Crée un nouveau FluxEntreeBits.
@@ -31,17 +33,18 @@ public class FluxEntreeBits implements AutoCloseable {
 
     public int lireBit() throws IOException {
         // On n'a plus de bits en réserve dans le tampon ?
-        if (bitsRestants == 0) {
-            tampon = entree.read(); // On lit le prochain octet (8 bits)
+        if (bitsRestants == 0)
+       	{
+	    // On lit le prochain octet (8 bits)
+            tampon = entree.read(); 
             if (tampon == -1) {
-                return -1; // Fin du flux
+                return -1; 
             }
-            bitsRestants = 8; // On a refait le plein de 8 bits
+	    // On a refait le plein de 8 bits
+            bitsRestants = 8; 
         }
 
-        // Lecture du bit le plus significatif au moins significatif (Big Endian)
-        // Exemple : tampon = 1010000, bitsRestants = 8
-        // (tampon >> 7) & 1 donne le premier bit.
+        // Lecture du bit le plus significatif au moins significatif 
         int bit = (tampon >> (bitsRestants - 1)) & 1;
         bitsRestants--;
         return bit;

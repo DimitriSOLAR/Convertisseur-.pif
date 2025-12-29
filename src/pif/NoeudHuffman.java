@@ -1,6 +1,8 @@
 package pif;
 
 /**
+ * @Author Dimitri SOLAR, Valentin LOISON
+ * @version 1.0
  * Représente un nœud dans l'arbre de Huffman.
  * Implémente Comparable pour être utilisé dans une file de priorité.
  */
@@ -54,8 +56,7 @@ public class NoeudHuffman implements Comparable<NoeudHuffman> {
 
     /**
      * Compare deux nœuds selon leur fréquence pour la file de priorité.
-     * Les nœuds avec les fréquences les plus basses sont prioritaires (traités en
-     * premier).
+     * Les nœuds avec les fréquences les plus basses sont prioritaires (traités en premier).
      * 
      * @param autre L'autre nœud à comparer.
      * @return négatif si ce nœud est plus petit, positif si plus grand.

@@ -8,6 +8,8 @@ import java.io.File;
 import java.io.IOException;
 
 /**
+ * @Author Dimitri SOLAR, Valentin LOISON
+ * @version 1.0
  * La fenêtre principale de l'application Visualisateur.
  */
 public final class FenetreVisualisateur extends JFrame {
@@ -45,7 +47,7 @@ public final class FenetreVisualisateur extends JFrame {
             this.image = pif.versBufferedImage();
             panneauImage.setImage(image);
 
-            // Adapter la taille de la fenêtre
+            //Adapte la taille de la fenêtre
             Dimension tailleEcran = Toolkit.getDefaultToolkit().getScreenSize();
             int l = Math.min(pif.getLargeur() + 50, tailleEcran.width - 100);
             int h = Math.min(pif.getHauteur() + 50, tailleEcran.height - 100);
