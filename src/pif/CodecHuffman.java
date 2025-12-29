@@ -3,31 +3,37 @@ package pif;
 import java.util.*;
 
 /**
+ * @author Dimitri SOLAR, Valentin LOISON
+ * @version 1.0
  * Logique centrale pour le codage de Huffman, incluant la génération de codes
  * canoniques.
  */
-public class CodecHuffman {
+public class CodecHuffman 
+{
 
-    // Classe utilitaire pour la construction de codes canoniques
-    public static class InfoCode implements Comparable<InfoCode> {
-        public int valeur;
-        public int longueur;
-        public String codeChaine; // Chaîne binaire
-        public int codeEntier; // Représentation entière
-
-        public InfoCode(int valeur, int longueur) {
-            this.valeur = valeur;
-            this.longueur = longueur;
-        }
-
-        @Override
-        public int compareTo(InfoCode autre) {
-            if (this.longueur != autre.longueur) {
-                return Integer.compare(this.longueur, autre.longueur);
-            }
-            return Integer.compare(this.valeur, autre.valeur);
-        }
-    }
+    	public static class InfoCode implements Comparable<InfoCode> 
+	{
+        	public int valeur;
+        	public int longueur;
+        	public String codeChaine; 
+        	public int codeEntier; 
+	
+	        public InfoCode(int valeur, int longueur) 
+		{
+	            this.valeur = valeur;
+	            this.longueur = longueur;
+	        }
+	
+        	@Override
+        	public int compareTo(InfoCode autre) 
+		{
+        	    if (this.longueur != autre.longueur) 
+		    {
+        	        return Integer.compare(this.longueur, autre.longueur);
+        	    }
+        	    return Integer.compare(this.valeur, autre.valeur);
+        	}
+    	}	
 
     /**
      * Calcule la fréquence de chaque valeur (0-255).
@@ -35,10 +41,13 @@ public class CodecHuffman {
      * @param donnees Les données des pixels.
      * @return Tableau de 256 entiers.
      */
-    public static int[] calculerFrequences(int[] donnees) {
+    public static int[] calculerFrequences(int[] donnees) 
+    {
         int[] frequences = new int[256];
-        for (int val : donnees) {
-            if (val >= 0 && val < 256) {
+        for (int val : donnees) 
+	{
+            if (val >= 0 && val < 256) 
+	    {
                 frequences[val]++;
             }
         }
@@ -51,19 +60,23 @@ public class CodecHuffman {
      * @param frequences Tableau de 256 fréquences.
      * @return La racine de l'arbre.
      */
-    public static NoeudHuffman construireArbre(int[] frequences) {
+    public static NoeudHuffman construireArbre(int[] frequences) 
+    {
         PriorityQueue<NoeudHuffman> filePriorite = new PriorityQueue<>();
-        for (int i = 0; i < frequences.length; i++) {
-            if (frequences[i] > 0) {
+        for (int i = 0; i < frequences.length; i++) 
+	{
+            if (frequences[i] > 0) 
+	    {
                 filePriorite.add(new NoeudHuffman(i, frequences[i]));
             }
         }
-
-        if (filePriorite.isEmpty()) {
+        if (filePriorite.isEmpty()) 
+	{
             return null;
         }
 
-        while (filePriorite.size() > 1) {
+        while (filePriorite.size() > 1) 
+	{
             NoeudHuffman gauche = filePriorite.poll();
             NoeudHuffman droit = filePriorite.poll();
             NoeudHuffman parent = new NoeudHuffman(gauche, droit);
@@ -79,14 +92,15 @@ public class CodecHuffman {
      * @param racine La racine de l'arbre.
      * @return Map de Valeur -> Chaîne Binaire.
      */
-    public static Map<Integer, String> genererCodesInitiaux(NoeudHuffman racine) {
+    public static Map<Integer, String> genererCodesInitiaux(NoeudHuffman racine) 
+    {
         Map<Integer, String> codes = new HashMap<>();
         if (racine == null)
             return codes;
 
-        // Cas particulier : si la racine est une feuille (une seule couleur dans
-        // l'image)
-        if (racine.estFeuille()) {
+        // Si la racine est une feuille (une seule couleur dans l'image)
+        if (racine.estFeuille()) 
+	{
             codes.put(racine.valeur, "0");
             return codes;
         }
@@ -95,15 +109,19 @@ public class CodecHuffman {
         return codes;
     }
 
-    private static void genererCodesRecursif(NoeudHuffman noeud, String codeActuel, Map<Integer, String> codes) {
-        if (noeud.estFeuille()) {
+    private static void genererCodesRecursif(NoeudHuffman noeud, String codeActuel, Map<Integer, String> codes) 
+    {
+        if (noeud.estFeuille()) 
+	{
             codes.put(noeud.valeur, codeActuel);
             return;
         }
-        if (noeud.gauche != null) {
+        if (noeud.gauche != null) 
+	{
             genererCodesRecursif(noeud.gauche, codeActuel + "0", codes);
         }
-        if (noeud.droit != null) {
+        if (noeud.droit != null) 
+	{
             genererCodesRecursif(noeud.droit, codeActuel + "1", codes);
         }
     }
@@ -114,9 +132,11 @@ public class CodecHuffman {
      * @param codesInitiaux Map de Valeur -> Code Initial (Chaîne).
      * @return Tableau de 256 longueurs d'octets (0 si absent).
      */
-    public static int[] genererLongueursCanoniques(Map<Integer, String> codesInitiaux) {
+    public static int[] genererLongueursCanoniques(Map<Integer, String> codesInitiaux) 
+    {
         int[] longueurs = new int[256];
-        for (Map.Entry<Integer, String> entree : codesInitiaux.entrySet()) {
+        for (Map.Entry<Integer, String> entree : codesInitiaux.entrySet()) 
+	{
             longueurs[entree.getKey()] = entree.getValue().length();
         }
         return longueurs;
@@ -124,24 +144,26 @@ public class CodecHuffman {
 
     /**
      * Génère la map des codes canoniques.
-     * Un code de Huffman canonique a la propriété que les codes d'une même longueur
-     * sont des valeurs binaires consécutives. Cela permet de reconstruire l'arbre
-     * juste avec les longueurs des codes.
+     * Un code de Huffman canonique a la propriété que les codes d'une même longueur sont des valeurs binaires consécutives. 
+     * Cela permet de reconstruire l'arbre juste avec les longueurs des codes.
      * 
      * @param longueurs Tableau de 256 longueurs.
      * @return Map de Valeur -> InfoCode (contenant le code binaire et entier).
      */
-    public static Map<Integer, InfoCode> genererCodesCanoniques(int[] longueurs) {
+    public static Map<Integer, InfoCode> genererCodesCanoniques(int[] longueurs) 
+    {
         // On crée une liste des valeurs présentes (longueur > 0)
         List<InfoCode> liste = new ArrayList<>();
-        for (int i = 0; i < longueurs.length; i++) {
-            if (longueurs[i] > 0) {
+        for (int i = 0; i < longueurs.length; i++) 
+	{
+            if (longueurs[i] > 0) 
+	    {
                 liste.add(new InfoCode(i, longueurs[i]));
             }
         }
 
-        // On trie : d'abord par longueur de code (court -> long),
-        // puis par valeur (0 -> 255) pour les longueurs égales.
+        // On trie d'abord par longueur de code (court -> long),
+        // Puis par valeur (0 -> 255) pour les longueurs égales.
         Collections.sort(liste);
 
         Map<Integer, InfoCode> map = new HashMap<>();
@@ -149,15 +171,14 @@ public class CodecHuffman {
         int longueurActuelle = 0;
 
         // On assigne les codes binaires
-        for (int i = 0; i < liste.size(); i++) {
+        for (int i = 0; i < liste.size(); i++) 
+	{
             InfoCode info = liste.get(i);
 
             if (i > 0) {
-                // Règle canonique : le code suivant est (code précédent + 1)
                 codeActuel++;
 
-                // Si la longueur augmente, on déplace le code vers la gauche (ajout de zéros à
-                // droite)
+                // Si la longueur augmente, on déplace le code vers la gauche (ajout de zéros à droite)
                 int diffLongueur = info.longueur - longueurActuelle;
                 codeActuel <<= diffLongueur;
             } else {
@@ -167,10 +188,11 @@ public class CodecHuffman {
             longueurActuelle = info.longueur;
             info.codeEntier = (int) codeActuel;
 
-            // Conversion en chaîne binaire (ex: "0101")
+            // Conversion en chaîne binaire
             // On écrit les bits un par un en testant chaque bit de l'entier.
             StringBuilder sb = new StringBuilder();
-            for (int b = info.longueur - 1; b >= 0; b--) {
+            for (int b = info.longueur - 1; b >= 0; b--) 
+	    {
                 sb.append(((codeActuel >> b) & 1) == 1 ? '1' : '0');
             }
             info.codeChaine = sb.toString();
@@ -187,21 +209,25 @@ public class CodecHuffman {
      * @param longueurs Tableau de 256 longueurs.
      * @return Racine de l'arbre de décodage.
      */
-    public static NoeudHuffman reconstruireArbreCanonique(int[] longueurs) {
+    public static NoeudHuffman reconstruireArbreCanonique(int[] longueurs) 
+    {
         Map<Integer, InfoCode> codes = genererCodesCanoniques(longueurs);
-        NoeudHuffman racine = new NoeudHuffman(-1, 0); // Racine fictive
-
-        for (InfoCode info : codes.values()) {
+        NoeudHuffman racine = new NoeudHuffman(-1, 0); 
+        for (InfoCode info : codes.values()) 
+	{
             NoeudHuffman courant = racine;
-            for (int i = 0; i < info.codeChaine.length(); i++) {
+            for (int i = 0; i < info.codeChaine.length(); i++) 
+	    {
                 char c = info.codeChaine.charAt(i);
                 if (c == '0') {
-                    if (courant.gauche == null) {
+                    if (courant.gauche == null) 
+		    {
                         courant.gauche = new NoeudHuffman(-1, 0);
                     }
                     courant = courant.gauche;
                 } else {
-                    if (courant.droit == null) {
+                    if (courant.droit == null) 
+		    {
                         courant.droit = new NoeudHuffman(-1, 0);
                     }
                     courant = courant.droit;
