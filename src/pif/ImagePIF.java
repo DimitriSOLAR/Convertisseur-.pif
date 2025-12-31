@@ -6,38 +6,52 @@ import java.awt.image.BufferedImage;
 import pif.CodecHuffman.InfoCode;
 
 /**
- * @Author Dimitri SOLAR, Valentin LOISON
+ * Représente une image au format PIF (Proprietary Image Format).
+ * Cette classe gère la structure de données de l'image (pixels, dimensions) ainsi que les mécanismes de persistance (lecture/écriture) incluant la compression et décompression par codage de Huffman canonique.
+ * @author Dimitri SOLAR, Valentin LOISON
  * @version 1.0
- * Représente une image au format PIF.
- * Gère la lecture et l'écriture des fichiers .pif.
  */
 public class ImagePIF {
+    
+    // Largeur de l'image en pixels 
     private int largeur;
+    
+    // Hauteur de l'image en pixels
     private int hauteur;
+    
+    // Tableau unidimensionnel des pixels au format ARGB
     private int[] pixels;
 
+    /**
+     * Construit une instance d'ImagePIF avec ses données brutes.
+     * @param largeur Largeur de l'image.
+     * @param hauteur Hauteur de l'image.
+     * @param pixels Tableau des pixels.
+     */
     public ImagePIF(int largeur, int hauteur, int[] pixels) {
         this.largeur = largeur;
         this.hauteur = hauteur;
         this.pixels = pixels;
     }
 
+    // @return La largeur de l'image
     public int getLargeur() {
         return largeur;
     }
 
+    // @return La hauteur de l'image
     public int getHauteur() {
         return hauteur;
     }
 
+    // @return Le tableau des pixels
     public int[] getPixels() {
         return pixels;
     }
 
     /**
-     * Convertit en BufferedImage.
-     * 
-     * @return Une BufferedImage standard.
+     * Convertit l'objet actuel en une image manipulable par Java AWT/Swing.
+     * @return Une instance de {@link BufferedImage} de type <code>TYPE_INT_RGB</code>.
      */
     public BufferedImage versBufferedImage() {
         BufferedImage img = new BufferedImage(largeur, hauteur, BufferedImage.TYPE_INT_RGB);
@@ -46,10 +60,9 @@ public class ImagePIF {
     }
 
     /**
-     * Crée une ImagePIF à partir d'une BufferedImage.
-     * 
-     * @param img L'image source.
-     * @return Une nouvelle ImagePIF.
+     * Crée un objet ImagePIF à partir d'une image standard.
+     * @param img L'image source à convertir.
+     * @return Une nouvelle instance de {@link ImagePIF}.
      */
     public static ImagePIF depuisBufferedImage(BufferedImage img) {
         int l = img.getWidth();
@@ -59,126 +72,94 @@ public class ImagePIF {
     }
 
     /**
-     * Sauvegarde l'image dans un fichier PIF.
-     * Cette méthode réalise la compression de l'image en utilisant le codage de Huffman.
-     * 
-     * @param chemin Le chemin de sortie.
-     * @throws IOException Si une erreur d'écriture survient.
+     * Sauvegarde l'image sur le disque avec compression de Huffman.
+     * Le processus suit les étapes suivantes :
+     * 1. Écriture des dimensions.
+     * 2. Séparation des canaux R, V, B.
+     * 3. Calcul des fréquences et des codes canoniques par canal.
+     * 4. Écriture des tables de longueurs (768 octets).
+     * 5. Écriture du flux binaire compressé.
+     * @param chemin Le chemin de destination du fichier .pif.
+     * @throws IOException Si une erreur d'accès au fichier survient.
      */
     public void sauvegarder(String chemin) throws IOException {
         try (FileOutputStream fos = new FileOutputStream(chemin);
-                FluxSortieBits fsb = new FluxSortieBits(fos)) {
+             FluxSortieBits fsb = new FluxSortieBits(fos)) {
 
-            // En-tête (dimensions de l'image)
+            // En-tête (2 x 16 bits pour les dimensions)
             ecrireShort(fos, largeur);
             ecrireShort(fos, hauteur);
 
-            // Séparation des canaux RGB On sépare les composantes Rouge, Vert et Bleu pour les compresser indépendamment.
+            // Séparation des canaux RGB
             int[] r = new int[pixels.length];
             int[] v = new int[pixels.length];
             int[] b = new int[pixels.length];
 
             for (int i = 0; i < pixels.length; i++) {
-                // Extraction des octets par décalage de bits
                 int c = pixels[i];
-		// Décalage de 16 bits pour le rouge
-                r[i] = (c >> 16) & 0xFF; 
-		// Décalage de 8 bits pour le vert
-                v[i] = (c >> 8) & 0xFF; 
-		// Les 8 derniers bits pour le bleu
-                b[i] = c & 0xFF; 
+                r[i] = (c >> 16) & 0xFF;
+                v[i] = (c >> 8) & 0xFF;
+                b[i] = c & 0xFF;
             }
 
-            // Calcul des fréquences d'apparition de chaque niveau de couleur (0-255)
-            // Sert à construire l'arbre de Huffman optimal pour chaque canal.
+            // Calcul des fréquences et construction des codes
             int[] freqR = CodecHuffman.calculerFrequences(r);
             int[] freqV = CodecHuffman.calculerFrequences(v);
             int[] freqB = CodecHuffman.calculerFrequences(b);
 
-            // Construction des arbres de Huffman et génération des codes
-            // Chaque canal a son propre arbre car les statistiques de couleurs peuvent varier.
-            NoeudHuffman racineR = CodecHuffman.construireArbre(freqR);
-            NoeudHuffman racineV = CodecHuffman.construireArbre(freqV);
-            NoeudHuffman racineB = CodecHuffman.construireArbre(freqB);
+            Map<Integer, String> initR = CodecHuffman.genererCodesInitiaux(CodecHuffman.construireArbre(freqR));
+            Map<Integer, String> initV = CodecHuffman.genererCodesInitiaux(CodecHuffman.construireArbre(freqV));
+            Map<Integer, String> initB = CodecHuffman.genererCodesInitiaux(CodecHuffman.construireArbre(freqB));
 
-            // Génération des codes binaires initiaux (par parcours de l'arbre)
-            Map<Integer, String> initR = CodecHuffman.genererCodesInitiaux(racineR);
-            Map<Integer, String> initV = CodecHuffman.genererCodesInitiaux(racineV);
-            Map<Integer, String> initB = CodecHuffman.genererCodesInitiaux(racineB);
-
-            // Normalisation vers des codes Canoniques
-            // Les codes canoniques permettent de sauvegarder uniquement les longueurs des codes dans le fichier, plutôt que l'arbre entier, ce qui gagne de la place.
             int[] lenR = CodecHuffman.genererLongueursCanoniques(initR);
             int[] lenV = CodecHuffman.genererLongueursCanoniques(initV);
             int[] lenB = CodecHuffman.genererLongueursCanoniques(initB);
 
-            // Écriture des tables de Huffman (les longueurs des codes)
-            // On écrit 256 octets pour chaque canal, représentant la longueur du code pour
+            // Stockage des tables de codage (En-tête de décompression)
             ecrireTable(fos, lenR);
             ecrireTable(fos, lenV);
             ecrireTable(fos, lenB);
 
-            // Génération des tables de codage finales (valeur -> code binaire)
             Map<Integer, InfoCode> mapR = CodecHuffman.genererCodesCanoniques(lenR);
             Map<Integer, InfoCode> mapV = CodecHuffman.genererCodesCanoniques(lenV);
             Map<Integer, InfoCode> mapB = CodecHuffman.genererCodesCanoniques(lenB);
 
-            // Écriture des pixels compressés
-            // Pour chaque pixel, on écrit le code binaire correspondant à ses valeurs R, V et B.
+            // Écriture du corps de l'image (flux de bits)
             for (int i = 0; i < pixels.length; i++) {
-                // Rouge
-                InfoCode infoR = mapR.get(r[i]);
-                fsb.ecrireChaineBinaire(infoR.codeChaine);
-                // Vert
-                InfoCode infoV = mapV.get(v[i]);
-                fsb.ecrireChaineBinaire(infoV.codeChaine);
-                // Bleu
-                InfoCode infoB = mapB.get(b[i]);
-                fsb.ecrireChaineBinaire(infoB.codeChaine);
+                fsb.ecrireChaineBinaire(mapR.get(r[i]).codeChaine);
+                fsb.ecrireChaineBinaire(mapV.get(v[i]).codeChaine);
+                fsb.ecrireChaineBinaire(mapB.get(b[i]).codeChaine);
             }
-            // On s'assure que le dernier octet est bien écrit (bourrage avec des zéros si nécessaire)
             fsb.vider();
         }
     }
 
     /**
-     * Charge une image PIF depuis un fichier.
-     * Cette méthode réalise la décompression en reconstruisant les arbres d'Huffman à partir des tables stockées dans le fichier.
-     * 
-     * @param chemin Le chemin du fichier à charger.
-     * @return L'objet ImagePIF contenant les pixels décompressés.
-     * @throws IOException Si erreur de lecture ou fichier invalide.
+     * Charge et décompresse une image PIF depuis un fichier.
+     * @param chemin Le chemin du fichier .pif à lire.
+     * @return Une instance d'{@link ImagePIF} prête à l'affichage.
+     * @throws IOException Si le fichier est corrompu ou illisible.
      */
     public static ImagePIF charger(String chemin) throws IOException {
         try (FileInputStream fis = new FileInputStream(chemin);
-                FluxEntreeBits feb = new FluxEntreeBits(fis)) {
+             FluxEntreeBits feb = new FluxEntreeBits(fis)) {
 
-            // Lecture de l'en-tête (dimensions)
             int l = lireShort(fis);
             int h = lireShort(fis);
 
-            // Lecture des tables de Huffman
-            // On lit 256 octets pour chaque canal (R, V, B), qui donnent la longueur du code
             int[] lenR = lireTable(fis);
             int[] lenV = lireTable(fis);
             int[] lenB = lireTable(fis);
 
-            // Reconstruction des arbres de Huffman canoniques
-            // À partir des longueurs, on peut reconstruire exactement le même arbre qu'à la compression.
             NoeudHuffman racineR = CodecHuffman.reconstruireArbreCanonique(lenR);
             NoeudHuffman racineV = CodecHuffman.reconstruireArbreCanonique(lenV);
             NoeudHuffman racineB = CodecHuffman.reconstruireArbreCanonique(lenB);
 
-            // Lecture des pixels compressés
             int[] pixels = new int[l * h];
             for (int i = 0; i < pixels.length; i++) {
-                // Pour chaque pixel, on décode les 3 composantes en parcourant l'arbre bit par bit.
                 int r = lireValeur(feb, racineR);
                 int v = lireValeur(feb, racineV);
                 int b = lireValeur(feb, racineB);
-
-                // On recompose la couleur finale (ARGB)
-                // 0xFF << 24 met l'opacité (Alpha) à 100% (255)
                 pixels[i] = (0xFF << 24) | (r << 16) | (v << 8) | b;
             }
 
@@ -186,46 +167,50 @@ public class ImagePIF {
         }
     }
 
+    /**
+     * Décode un symbole unique en parcourant l'arbre de Huffman selon les bits lus.
+     * @param feb Le flux d'entrée bit à bit.
+     * @param racine La racine de l'arbre de Huffman pour le canal concerné.
+     * @return La valeur décodée (0-255).
+     * @throws IOException Si la fin du fichier est atteinte prématurément.
+     */
     private static int lireValeur(FluxEntreeBits feb, NoeudHuffman racine) throws IOException {
         NoeudHuffman courant = racine;
         while (!courant.estFeuille()) {
             int bit = feb.lireBit();
-            if (bit == -1)
-                throw new EOFException("Fin de flux inattendue");
-            if (bit == 0) {
-                courant = courant.gauche;
-            } else {
-                courant = courant.droit;
-            }
+            if (bit == -1) throw new EOFException("Fin de flux inattendue");
+            courant = (bit == 0) ? courant.gauche : courant.droit;
         }
         return courant.valeur;
     }
 
+    // Méthodes utilitaires d'I/O
+
+    // Écrit un entier sur 16 bits dans le flux
     private static void ecrireShort(OutputStream os, int val) throws IOException {
         os.write((val >> 8) & 0xFF);
         os.write(val & 0xFF);
     }
 
+    // Lit un entier sur 16 bits depuis le flux
     private static int lireShort(InputStream is) throws IOException {
         int ch1 = is.read();
         int ch2 = is.read();
-        if ((ch1 | ch2) < 0)
-            throw new EOFException();
+        if ((ch1 | ch2) < 0) throw new EOFException();
         return (ch1 << 8) + (ch2 << 0);
     }
 
+    // Écrit les 256 octets d'une table de longueurs de codes
     private static void ecrireTable(OutputStream os, int[] longueurs) throws IOException {
-        for (int l : longueurs) {
-            os.write(l);
-        }
+        for (int l : longueurs) os.write(l);
     }
 
+    // Lit les 256 octets d'une table de longueurs de codes
     private static int[] lireTable(InputStream is) throws IOException {
         int[] longueurs = new int[256];
         for (int i = 0; i < 256; i++) {
             int val = is.read();
-            if (val < 0)
-                throw new EOFException();
+            if (val < 0) throw new EOFException();
             longueurs[i] = val;
         }
         return longueurs;
