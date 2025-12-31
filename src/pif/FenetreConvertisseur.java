@@ -1,7 +1,7 @@
 package pif;
+import pif.CodecHuffman.InfoCode;
 
 import javax.imageio.ImageIO;
-import pif.CodecHuffman.InfoCode;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -10,17 +10,33 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
- * @Author Dimitri SOLAR, Valentin LOISON
+ * Fenêtre principale de l'application de conversion d'images au format PIF.
+ * Cette interface permet de charger une image standard (PNG, JPG), d'analyser ses composantes colorimétriques (RGB), d'afficher les statistiques de Huffman et d'exporter le résultat compressé.
+ * @author Dimitri SOLAR, Valentin LOISON
  * @version 1.0
- * Fenêtre principale de l'application Convertisseur.
  */
 public final class FenetreConvertisseur extends JFrame {
+    
+    // Identifiant de sérialisation pour la compatibilité 
     private static final long serialVersionUID = 1L;
+    
+    // L'image actuellement chargée en mémoire
     private transient BufferedImage imageCourante;
+    
+    // Composant affichant l'aperçu visuel de l'image
     private JLabel etiquetteImage;
+    
+    // Panneau à onglets affichant les tables de codage pour chaque canal (R, V, B) 
     private JTabbedPane ongletsStats;
+    
+    // Chemin de sauvegarde prédéfini lors du lancement.
     private String cheminSortieDefaut;
 
+    /**
+     * Initialise la fenêtre, ses composants graphiques et tente de charger une image si un chemin est fourni.
+     * @param cheminEntree Chemin vers l'image à charger (peut être null).
+     * @param cheminSortie Chemin par défaut pour l'exportation PIF.
+     */
     public FenetreConvertisseur(String cheminEntree, String cheminSortie) {
         setTitle("Convertisseur PIF");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -55,6 +71,10 @@ public final class FenetreConvertisseur extends JFrame {
         }
     }
 
+    /**
+     * Affiche un sélecteur de fichier pour permettre à l'utilisateur de choisir 
+     * une image à traiter.
+     */
     void ouvrirImage() {
         JFileChooser selecteur = new JFileChooser();
         if (selecteur.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
@@ -62,6 +82,10 @@ public final class FenetreConvertisseur extends JFrame {
         }
     }
 
+    /**
+     * Charge une image depuis le disque, met à jour l'aperçu et recalcule les statistiques de Huffman.
+     * @param chemin Le chemin absolu du fichier image.
+     */
     private void chargerImage(String chemin) {
         try {
             BufferedImage img = ImageIO.read(new File(chemin));
@@ -81,6 +105,13 @@ public final class FenetreConvertisseur extends JFrame {
         }
     }
 
+    /**
+     * Redimensionne une image pour qu'elle tienne dans les dimensions données tout en conservant son ratio d'aspect.
+     * @param src L'image source.
+     * @param l Largeur maximale souhaitée.
+     * @param h Hauteur maximale souhaitée.
+     * @return Une version redimensionnée de l'image.
+     */
     private Image getImageRedimensionnee(BufferedImage src, int l, int h) {
         int lOriginale = src.getWidth();
         int hOriginale = src.getHeight();
@@ -90,6 +121,10 @@ public final class FenetreConvertisseur extends JFrame {
         return src.getScaledInstance(nouvL, nouvH, Image.SCALE_SMOOTH);
     }
 
+    /**
+     * Extrait les pixels de l'image et sépare les canaux Rouge, Vert et Bleu
+     * pour lancer l'analyse de fréquence.
+     */
     private void calculerEtAfficherStats() {
         ongletsStats.removeAll();
         int l = imageCourante.getWidth();
@@ -112,6 +147,11 @@ public final class FenetreConvertisseur extends JFrame {
         ajouterStatsCanal("Bleu", b);
     }
 
+    /**
+     * Analyse un canal de couleur spécifique, génère ses codes de Huffman et crée un tableau récapitulatif dans un nouvel onglet.
+     * @param nom Nom du canal (ex: "Rouge").
+     * @param donnees Tableau des valeurs (0-255) du canal.
+     */
     private void ajouterStatsCanal(String nom, int[] donnees) {
         int[] frequences = CodecHuffman.calculerFrequences(donnees);
         NoeudHuffman racine = CodecHuffman.construireArbre(frequences);
@@ -143,6 +183,9 @@ public final class FenetreConvertisseur extends JFrame {
         ongletsStats.addTab(nom, new JScrollPane(table));
     }
 
+    /**
+     * Convertit l'image chargée au format PIF en utilisant le codage de Huffman et enregistre le fichier sur le disque.
+     */
     void convertirImage() {
         if (imageCourante == null)
             return;
@@ -163,9 +206,9 @@ public final class FenetreConvertisseur extends JFrame {
         try {
             ImagePIF pif = ImagePIF.depuisBufferedImage(imageCourante);
             pif.sauvegarder(chemin);
-            JOptionPane.showMessageDialog(this, "Succès ! Sauvegardé sous " + chemin);
+            JOptionPane.showMessageDialog(this, " Sauvegardé sous " + chemin);
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Erreur lors de la sauvegarde PIF : " + e.getMessage());
+            JOptionPane.showMessageDialog(this, "Erreur lors de la sauvegarde : " + e.getMessage());
             e.printStackTrace();
         }
     }

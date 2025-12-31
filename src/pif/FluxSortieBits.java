@@ -79,8 +79,7 @@ public class FluxSortieBits implements AutoCloseable {
     }
 
     /**
-     * Vide les bits restants dans le flux, en complétant avec des zéros si
-     * nécessaire.
+     * Vide les bits restants dans le flux, en complétant avec des zéros si nécessaire.
      */
     public void vider() throws IOException {
         if (bitsDansTampon > 0) {
