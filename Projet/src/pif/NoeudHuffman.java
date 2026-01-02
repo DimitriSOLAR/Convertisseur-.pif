@@ -7,22 +7,22 @@ package pif;
  * Implémente Comparable pour être utilisé dans une file de priorité.
  */
 public class NoeudHuffman implements Comparable<NoeudHuffman> {
-    /** La fréquence de la ou des valeurs représentées par ce nœud. */
+    // La fréquence de la ou des valeurs représentées par ce nœud
     public int frequence;
 
-    /** La valeur du pixel (0-255) si c'est une feuille, ou -1 sinon. */
+    // La valeur du pixel (0-255) si c'est une feuille, ou -1 sinon
     public int valeur;
 
-    /** L'enfant gauche de ce nœud. */
+    // L'enfant gauche de ce nœud
     public NoeudHuffman gauche;
 
-    /** L'enfant droit de ce nœud. */
+    // L'enfant droit de ce nœud
     public NoeudHuffman droit;
 
     /**
      * Construit un nœud feuille.
      * 
-     * @param valeur    La valeur du pixel (0-255).
+     * @param valeur La valeur du pixel (0-255).
      * @param frequence La fréquence de la valeur.
      */
     public NoeudHuffman(int valeur, int frequence) {
@@ -36,7 +36,7 @@ public class NoeudHuffman implements Comparable<NoeudHuffman> {
      * Construit un nœud interne.
      * 
      * @param gauche L'enfant gauche.
-     * @param droit  L'enfant droit.
+     * @param droit L'enfant droit.
      */
     public NoeudHuffman(NoeudHuffman gauche, NoeudHuffman droit) {
         this.valeur = -1;

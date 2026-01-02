@@ -3,20 +3,20 @@ package pif;
 import java.util.Arrays;
 
 /**
- * Classe principale de l'application.
- * Lance le convertisseur ou le visualisateur en fonction des arguments.
+ * Classe d'entrée principale de l'application PIF (Proprietary Image Format).
+ * Cette classe agit comme un répartiteur (dispatcher) qui permet de lancer soit l'outil de conversion, soit l'outil de visualisation selon les arguments fournis en ligne de commande.
+ * @author Dimitri SOLAR, Valentin LOISON
+ * @version 1.0
  */
 public class Main {
 
     /**
-     * @Author Dimitri SOLAR, Valentin LOISON
-     * @version 1.0
-     *
      * Point d'entrée de l'application.
-     * 
-     * @param args Les arguments de la ligne de commande.
-     *             Le premier argument doit être "convertisseur" or "visualisateur".
-     *             Les arguments suivants sont passés à l'application choisie.
+     * La syntaxe attendue est la suivante :
+     * <li><code>java pif.Main convertisseur [entrée] [sortie]</code></li>
+     * <li><code>java pif.Main visualisateur [entrée]</code></li>
+     * @param args Les arguments de la ligne de commande. 
+     * Le premier argument spécifie le mode (<code>convertisseur</code> ou <code>visualisateur</code>).
      */
     public static void main(String[] args) {
         if (args.length == 0) {
@@ -41,17 +41,30 @@ public class Main {
         }
     }
 
+    /**
+     * Initialise et affiche l'interface du convertisseur d'images.
+     * @param args Arguments optionnels : args[0] pour le fichier source, 
+     * args[1] pour la destination par défaut.
+     */
     private static void lancerConvertisseur(String[] args) {
         String cheminEntree = args.length > 0 ? args[0] : null;
         String cheminSortie = args.length > 1 ? args[1] : null;
         new FenetreConvertisseur(cheminEntree, cheminSortie).setVisible(true);
     }
 
+    /**
+     * Initialise et affiche l'interface du visualisateur de fichiers PIF.
+     * @param args Argument optionnel : args[0] pour le chemin du fichier .pif à ouvrir.
+     */
     private static void lancerVisualisateur(String[] args) {
         String chemin = (args.length > 0) ? args[0] : null;
         new FenetreVisualisateur(chemin).setVisible(true);
     }
 
+    /**
+     * Affiche l'aide utilisateur dans le flux d'erreur standard en cas 
+     * d'arguments invalides ou manquants.
+     */
     private static void printUsage() {
         System.err.println("Usage: java pif.Main <commande> [options]");
         System.err.println("Commandes:");
