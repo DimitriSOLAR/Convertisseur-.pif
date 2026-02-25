@@ -1,4 +1,4 @@
-# SAE32_2025
+# Projet étudiant informatique
 
 <h3>Réalisation par Valentin LOISONV et Dimitri SOLAR</h3>
 
